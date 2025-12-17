@@ -9,8 +9,12 @@ import {
   QrCode,
   Trash2,
   Filter,
-  X
+  X,
+  Download
 } from 'lucide-vue-next';
+import { useToast } from 'primevue/usetoast';
+
+import { generatePostmanCollection } from './utils/postmanExport';
 
 import { useTrafficStore } from '@/stores/trafficStore';
 import { useProxyStore } from '@/stores/proxyStore';
@@ -21,12 +25,15 @@ import RequestList from '@/components/RequestList.vue';
 import FilterPanel from '@/components/FilterPanel.vue';
 import RequestDetail from '@/components/RequestDetail.vue';
 import SettingsDialog from '@/components/SettingsDialog.vue';
+import ToolsView from '@/views/ToolsView.vue';
 
 const trafficStore = useTrafficStore();
 const proxyStore = useProxyStore();
 const settingsStore = useSettingsStore();
+const toast = useToast();
 
 // State
+const currentView = ref<'interceptor' | 'tools'>('interceptor');
 const showFilters = ref(false);
 const showSettings = ref(false);
 const showQrCode = ref(false);
@@ -101,8 +108,23 @@ function stopResize() {
   document.body.style.cursor = '';
 }
 
+
 function clearRequests() {
   trafficStore.clearAll();
+}
+
+function exportPostman() {
+  const collectionJson = generatePostmanCollection(trafficStore.requests, 'Trafexia Export');
+  const blob = new Blob([collectionJson], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `trafexia_export_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast.add({ severity: 'success', summary: 'Exported', detail: 'Postman Collection exported successfully', life: 3000 });
 }
 </script>
 
@@ -115,10 +137,38 @@ function clearRequests() {
     <!-- Header -->
     <header class="app-header"
       style="height: 56px; display: flex; align-items: center; padding: 0 16px; gap: 16px; background: #161b22; border-bottom: 1px solid rgba(48, 54, 61, 0.8);">
-      <!-- Logo -->
       <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
         <Network style="width: 24px; height: 24px; color: #58a6ff;" />
         <span style="font-weight: 600; font-size: 17px; color: #e6edf3; white-space: nowrap;">Trafexia</span>
+      </div>
+
+      <!-- View Switcher -->
+      <div
+        style="background: #0d1117; border: 1px solid #30363d; padding: 2px; border-radius: 6px; display: flex; gap: 2px;">
+        <button @click="currentView = 'interceptor'" :style="{
+          padding: '4px 12px',
+          borderRadius: '4px',
+          border: 'none',
+          background: currentView === 'interceptor' ? '#21262d' : 'transparent',
+          color: currentView === 'interceptor' ? '#e6edf3' : '#8b949e',
+          fontSize: '13px',
+          fontWeight: '500',
+          cursor: 'pointer'
+        }">
+          Traffic
+        </button>
+        <button @click="currentView = 'tools'" :style="{
+          padding: '4px 12px',
+          borderRadius: '4px',
+          border: 'none',
+          background: currentView === 'tools' ? '#21262d' : 'transparent',
+          color: currentView === 'tools' ? '#e6edf3' : '#8b949e',
+          fontSize: '13px',
+          fontWeight: '500',
+          cursor: 'pointer'
+        }">
+          Tools
+        </button>
       </div>
 
       <!-- Proxy Control -->
@@ -139,6 +189,11 @@ function clearRequests() {
         <button class="btn btn-ghost btn-icon" :class="{ 'active': showFilters }" @click="showFilters = !showFilters"
           title="Toggle Filters">
           <Filter class="w-5 h-5" />
+        </button>
+
+        <!-- Export -->
+        <button class="btn btn-ghost btn-icon" @click="exportPostman" title="Export to Postman">
+          <Download class="w-5 h-5" />
         </button>
 
         <!-- QR Code -->
@@ -175,8 +230,13 @@ function clearRequests() {
         <FilterPanel />
       </aside>
 
-      <!-- Main Content Area -->
-      <div style="flex: 1; display: flex; overflow: hidden;" ref="mainContainer">
+      <!-- Tools View -->
+      <div v-if="currentView === 'tools'" style="flex: 1; overflow: hidden; background: #010409;">
+        <ToolsView />
+      </div>
+
+      <!-- Interceptor View (Main Content) -->
+      <div v-else style="flex: 1; display: flex; overflow: hidden;" ref="mainContainer">
         <!-- Request List Panel -->
         <div :style="listPanelStyle">
           <RequestList />

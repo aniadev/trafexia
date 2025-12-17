@@ -1,5 +1,6 @@
 import { ipcMain, BrowserWindow, shell, dialog } from 'electron';
 import * as fs from 'fs';
+import { ApkAnalyzer } from './services/ApkAnalyzer';
 import type { CertificateManager } from './services/CertificateManager';
 import type { ProxyServer } from './services/ProxyServer';
 import type { TrafficStorage } from './services/TrafficStorage';
@@ -22,11 +23,12 @@ interface Services {
   proxyServer: ProxyServer;
   trafficStorage: TrafficStorage;
   certServer: CertServer;
+  apkAnalyzer: ApkAnalyzer;
   mainWindow: () => BrowserWindow | null;
 }
 
 export function setupIpcHandlers(services: Services): void {
-  const { certificateManager, proxyServer, trafficStorage, certServer, mainWindow } = services;
+  const { certificateManager, proxyServer, trafficStorage, certServer, apkAnalyzer, mainWindow } = services;
 
   // ===== Proxy Control =====
 
@@ -218,6 +220,17 @@ export function setupIpcHandlers(services: Services): void {
 
   ipcMain.handle(IPC_CHANNELS.APP_GET_LOCAL_IP, async (): Promise<string> => {
     return getLocalIp();
+  });
+
+  // ===== Tools =====
+  
+  ipcMain.handle(IPC_CHANNELS.APK_ANALYZE, async (_event, filePath: string): Promise<string[]> => {
+    try {
+      return await apkAnalyzer.analyze(filePath);
+    } catch (error) {
+      console.error('[IPC] Failed to analyze APK:', error);
+      throw error;
+    }
   });
 }
 

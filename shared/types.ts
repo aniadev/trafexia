@@ -157,6 +157,9 @@ export const IPC_CHANNELS = {
 
   // App
   APP_GET_LOCAL_IP: 'app:get-local-ip',
+
+  // Tools
+  APK_ANALYZE: 'tools:apk-analyze',
 } as const;
 
 // ===== IPC Handler Types =====
@@ -184,6 +187,9 @@ export interface IpcApi {
 
   // App
   getLocalIp: () => Promise<string>;
+
+  // Tools
+  analyzeApk: (filePath: string) => Promise<string[]>;
 
   // Events
   onRequestCaptured: (callback: (request: CapturedRequest) => void) => () => void;

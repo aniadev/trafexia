@@ -6,6 +6,7 @@ import { TrafficStorage } from './services/TrafficStorage';
 import { CertServer } from './services/CertServer';
 import { setupIpcHandlers } from './ipc-handlers';
 import { getLocalIp } from './utils/network';
+import { ApkAnalyzer } from './services/ApkAnalyzer';
 
 // Services
 let certificateManager: CertificateManager;
@@ -73,6 +74,9 @@ const initializeServices = async () => {
 
   // Initialize proxy server
   proxyServer = new ProxyServer(certificateManager, trafficStorage);
+  
+  // Initialize APK analyzer
+  const apkAnalyzer = new ApkAnalyzer();
 
   // Setup IPC handlers
   setupIpcHandlers({
@@ -80,6 +84,7 @@ const initializeServices = async () => {
     proxyServer,
     trafficStorage,
     certServer,
+    apkAnalyzer,
     mainWindow: () => mainWindow,
   });
 

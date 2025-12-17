@@ -65,6 +65,11 @@ const api: IpcApi = {
     return ipcRenderer.invoke(IPC_CHANNELS.APP_GET_LOCAL_IP);
   },
 
+  // Tools
+  analyzeApk: (filePath: string): Promise<string[]> => {
+    return ipcRenderer.invoke(IPC_CHANNELS.APK_ANALYZE, filePath);
+  },
+
   // Events
   onRequestCaptured: (callback: (request: CapturedRequest) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, request: CapturedRequest) => {
