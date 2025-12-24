@@ -86,6 +86,12 @@ npm run build:linux
 
 ⚠️ **Warning**: Installing a CA certificate allows traffic interception. Only use this for development and reverse engineering on your own devices. Remove the certificate when not in use.
 
+## Support
+
+If you find this project helpful, consider supporting me:
+
+<a href="https://buymeacoffee.com/huypc9294" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 180px !important;" ></a>
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details.
